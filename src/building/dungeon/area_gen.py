@@ -9,12 +9,19 @@ lobby_z = 50
 lobby_width_1 = 120
 lobby_width_2 = 120
 lobby_height = 12
+build_area_start_x = lobby_x - 3
+build_area_start_y = lobby_y + 2
+build_area_start_z = lobby_z - 3
+build_area_end_x = lobby_x + lobby_width_1 + 3
+build_area_end_y = lobby_y + lobby_height * 2 + 1
+build_area_end_z = lobby_z + lobby_width_2 + 3
 
 
 def wall_generate(editor: Editor, x_corner, y_height, z_corner, width_1, width_2, height):
     cube_generate(editor, x_corner, y_height, z_corner, width_1, width_2, height)
     cube_generate(editor, x_corner + 1, y_height + 1, z_corner + 1, width_1 - 2, width_2 - 2, height - 1)
     no_border_cube_generate(editor, x_corner, y_height + height, z_corner, width_1, width_2, height, "air")
+    surface_generate(editor, x_corner + 2, y_height + 1, z_corner + 2, width_1 - 4, width_2 - 4, height)
     for i in range(0, width_1 + 1):
         if i % 2 == 0:
             editor.runCommand(f"setblock {x_corner + i} {y_height + height} {z_corner} stone_bricks")
@@ -41,6 +48,12 @@ def no_border_cube_generate(editor: Editor, x_corner, y_height, z_corner, width_
         editor.runCommand(
             f"fill {x_corner} {y_height + i} {z_corner} {x_corner + width_1} {y_height + i + 1} {z_corner + width_2} {material}")
         editor.flushBuffer()
+
+
+def surface_generate(editor: Editor, x_corner, y_height, z_corner, width_1, width_2, height):
+    editor.runCommand(
+        f"fill {x_corner} {y_height} {z_corner} {x_corner + width_1} {y_height} {z_corner + width_2} grass_block")
+    editor.flushBuffer()
 
 
 def lobby_generate(editor: Editor, x_corner, y_height, z_corner, width_1, width_2, height):

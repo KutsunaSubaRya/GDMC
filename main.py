@@ -52,6 +52,7 @@ from json import load
 from gdpc.vector_tools import ivec3, Box
 from gdpc import Editor
 from time import sleep
+from src.building.dungeon.area_gen import lobby_generate
 
 AREA_JSON_PATH = Path("area.json")
 
@@ -64,6 +65,105 @@ if __name__ == '__main__':
 
     # LOG_PATH = Path("log")
 
+    # print("Initing core...")
+    # core = Core()
+    # print("Done initing core")
+    #
+    # levelManager = LevelManager()
+    # agentPool = AgentPool(core, NUM_BASIC_AGENTS, NUM_SPECIAL_AGENTS)
+    # RoadAgent(core)
+    #
+    # for agent in agentPool.agents:
+    #     print(agent)
+    #
+    # # iterate rounds for surface
+    # for i in range(ROUND):
+    #     numbersOfBuildings = [
+    #         core.numberOfBuildings(level) for level in (1, 2, 3)
+    #     ]
+    #     limitsOfBuildings = [
+    #         core.getBuildingLimit(level) for level in (1, 2, 3)
+    #     ]
+    #
+    #     print(f"Round: {i}")
+    #     print(f"Level: {core.level}")
+    #     print(f"Buildings: {numbersOfBuildings}")
+    #     print(f"Max Buildings:  {limitsOfBuildings}")
+    #     print(f"Resources: {core.resources}")
+    #
+    #     core.updateResource()
+    #
+    #     unlockedAgents = getUnlockAgents(core.level, "surface")
+    #     print("Unlocked agents: ", unlockedAgents)
+    #
+    #     for unlockedAgent in unlockedAgents:
+    #         agentPool.unlockSpecial(unlockedAgent)
+    #
+    #     print("Start running agents")
+    #
+    #     restingAgents = 0
+    #
+    #     agents = list(agentPool.agents)
+    #     for agent in sample(agents, len(agents)):
+    #         # run agent
+    #         success = agent.run()
+    #
+    #         if not success:
+    #             # gather resource if the agent cannot do their job
+    #             restingAgents += 1
+    #             agent.rest()
+    #
+    #     core.increaseGrass()
+    #
+    #     print(f"Resting agents: {restingAgents}")
+    #
+    #     if levelManager.canLevelUp(core.level, core.resources,
+    #                                core.numberOfBuildings()):
+    #         core.levelUp()
+    #
+    #     # clamp resource to limit
+    #     core.conformToResourceLimit()
+    #
+    #     print("Round Done")
+    #     print("=====")
+    #
+    #     # Time limiter
+    #     if time() - startTime > 465:
+    #         print("Round had run over 7min 30sec. Force enter minecraft building phase.")
+    #         break
+    #
+    # print("Start building in minecraft")
+    #
+    # core.startBuildingInMinecraft()
+    #
+    # print("Done building in minecraft")
+
+    # iterate rounds for underground
+    # FIXME: hardcode here
+
+    lobby_x = 50
+    lobby_y = 0
+    lobby_z = 50
+    lobby_width_1 = 120
+    lobby_width_2 = 120
+    lobby_height = 12
+    build_area_start_x = lobby_x + 2
+    build_area_start_y = lobby_y + 2
+    build_area_start_z = lobby_z + 2
+    build_area_end_x = lobby_x + lobby_width_1 - 2
+    build_area_end_y = lobby_y + lobby_height * 2
+    build_area_end_z = lobby_z + lobby_width_2 - 2
+    editor = Editor()
+    # setbuildarea
+    editor.runCommand(
+        f"setbuildarea {build_area_start_x} {build_area_start_y} {build_area_start_z} {build_area_end_x} {build_area_end_y} {build_area_end_z}")
+    editor.flushBuffer()
+
+    print(
+        f"setbuildarea {build_area_start_x} {build_area_start_y} {build_area_start_z} {build_area_end_x} {build_area_end_y} {build_area_end_z}")
+    # build lobby and wall
+    lobby_generate(editor, lobby_x, lobby_y, lobby_z, lobby_width_1, lobby_width_2, lobby_height)
+
     print("Initing core...")
     core = Core()
     print("Done initing core")
@@ -75,7 +175,6 @@ if __name__ == '__main__':
     for agent in agentPool.agents:
         print(agent)
 
-    # iterate rounds
     for i in range(ROUND):
         numbersOfBuildings = [
             core.numberOfBuildings(level) for level in (1, 2, 3)
@@ -92,7 +191,7 @@ if __name__ == '__main__':
 
         core.updateResource()
 
-        unlockedAgents = getUnlockAgents(core.level)
+        unlockedAgents = getUnlockAgents(core.level, "underground")
         print("Unlocked agents: ", unlockedAgents)
 
         for unlockedAgent in unlockedAgents:
@@ -117,7 +216,7 @@ if __name__ == '__main__':
         print(f"Resting agents: {restingAgents}")
 
         if levelManager.canLevelUp(core.level, core.resources,
-                                core.numberOfBuildings()):
+                                   core.numberOfBuildings()):
             core.levelUp()
 
         # clamp resource to limit
@@ -126,11 +225,6 @@ if __name__ == '__main__':
         print("Round Done")
         print("=====")
 
-        # Time limiter
-        if time() - startTime > 465:
-            print("Round had run over 7min 30sec. Force enter minecraft building phase.")
-            break
-
     print("Start building in minecraft")
 
     core.startBuildingInMinecraft()
@@ -138,4 +232,4 @@ if __name__ == '__main__':
     print("Done building in minecraft")
 
     print(f"Time: {time() - startTime}")
-    # plotBlueprint(core)
+    plotBlueprint(core)

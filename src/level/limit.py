@@ -20,6 +20,9 @@ class LevelLimit:
     unlockAgents: list[list[str]]
     """Unlock agents of level"""
 
+    unlockAgentsUnderground: list[list[str]]
+    """Unlock agents of level"""
+
     buildingRequirements: list[int]
     """Building requirements of level up"""
 
@@ -33,6 +36,7 @@ class LevelLimit:
             resourcesLimit: dict = limit["resources"]
             buildings: list[list[int]] = limit["buildings"]
             unlockAgents: list[list[str]] = limit["unlock_agents"]
+            unlockAgentsUnderground: list[list[str]] = limit["unlock_agents_underground"]
             buildingRequirements: list[int] = limit["building_requirements"]
 
             resources = list[Resource]()
@@ -48,7 +52,7 @@ class LevelLimit:
                     Resource(human, wood, stone, food, ironOre, iron))
 
             return LevelLimit(
-                maxLevel, resources, buildings, unlockAgents, buildingRequirements)
+                maxLevel, resources, buildings, unlockAgents, unlockAgentsUnderground, buildingRequirements)
 
 
 levelLimit: LevelLimit = LevelLimit.load()
@@ -64,9 +68,11 @@ def getBuildingLimit(coreLevel: int, buildingLevel: int) -> int:
     return levelLimit.buildings[buildingLevel-1][coreLevel-1]
 
 
-def getUnlockAgents(coreLevel: int) -> list[str]:
+def getUnlockAgents(coreLevel: int, unlock_type="surface") -> list[str]:
     """Return unlock agents of level"""
-    return levelLimit.unlockAgents[coreLevel-1]
+    if unlock_type == "surface":
+        return levelLimit.unlockAgents[coreLevel-1]
+    return levelLimit.unlockAgentsUnderground[coreLevel-1]
 
 
 def getBuildingRequirements(coreLevel: int) -> int:
