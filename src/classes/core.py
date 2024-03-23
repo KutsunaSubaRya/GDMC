@@ -49,7 +49,7 @@ class Core():
         for i in range(buildArea.begin.x, buildArea.end.x, 128):
             for j in range(buildArea.begin.z, buildArea.end.z, 128):
                 editor.runCommandGlobal(
-                    "forceload add {} {} {} {}".format(i, j, i+128, j+128))
+                    "forceload add {} {} {} {}".format(i, j, i + 128, j + 128))
 
         # get world slice and height maps
         print("Loading world slice...")
@@ -171,7 +171,7 @@ class Core():
     def updateResource(self):
         for _, building in self.blueprintData.items():
             buildingLevel = building.level
-            self._resources += building.building_info.structures[buildingLevel-1].production
+            self._resources += building.building_info.structures[buildingLevel - 1].production
 
     def getBlueprintBuildingData(self, id: int):
         return self._blueprintData.get(id, None)
@@ -277,7 +277,7 @@ class Core():
         for i in range(1, h):
             for j in range(1, w):
                 prefix[i][j] = prefix[i - 1][j] + prefix[i][j - 1] - \
-                    prefix[i - 1][j - 1] + isEmpty(self.blueprint[i][j])
+                               prefix[i - 1][j - 1] + isEmpty(self.blueprint[i][j])
 
         self.emptyAreaPrefix = prefix
         pass
@@ -307,7 +307,7 @@ class Core():
                 used = self.emptyAreaPrefix[lh][lw] - top - left + leftTop
                 if used == 0:
                     result.append(Rect((i * UNIT, j * UNIT),
-                                  (height * UNIT, width * UNIT)))
+                                       (height * UNIT, width * UNIT)))
 
         return result
 
@@ -318,7 +318,7 @@ class Core():
         lack.append((limitResource.wood - existResource.wood, str("wood")))
         lack.append((limitResource.stone - existResource.stone, str("stone")))
         lack.append((limitResource.ironOre -
-                    existResource.ironOre, str("ironOre")))
+                     existResource.ironOre, str("ironOre")))
         lack.append((limitResource.iron - existResource.iron, str("iron")))
         lack.append((limitResource.food - existResource.food, str("food")))
         maxlack: tuple[int, str] = max(lack)
@@ -349,7 +349,7 @@ class Core():
         self.resources.iron = min(
             self.resourceLimit.iron, self._resources.iron)
 
-    def startBuildingInMinecraft(self):
+    def startBuildingInMinecraft(self, is_underground: bool = False, y_height: int = 0):
         """Send the blueprint to Minecraft"""
 
         globalBound = self.buildArea.toRect()
@@ -363,17 +363,24 @@ class Core():
         for id, building in self._blueprintData.items():
             pos = building.position
             level = building.level
-            structure = building.building_info.structures[level-1]
+            structure = building.building_info.structures[level - 1]
             size = building.building_info.max_size
             area = Rect(pos, dropY(size))
-            y = round(self.getHeightMap("mean", area))
+            if is_underground:
+                y = y_height
+            else:
+                y = round(self.getHeightMap("mean", area))
             print(f"Build at {pos + globalOffset} with height {y}")
-            buildFromNBT(self._editor, structure.nbtFile, addY(globalOffset),
-                         addY(pos, y) + structure.offsets, building.material)
+            if is_underground:
+                buildFromNBT(self._editor, structure.nbtFile, addY(globalOffset), addY(pos, y) + structure.offsets,
+                             building.material, is_underground=True)
+            else:
+                buildFromNBT(self._editor, structure.nbtFile, addY(globalOffset), addY(pos, y) + structure.offsets,
+                             building.material)
 
             if building.entryPos is not None:
                 x, z = building.entryPos
-                x, z = (x//UNIT)*UNIT, (z//UNIT)*UNIT
+                x, z = (x // UNIT) * UNIT, (z // UNIT) * UNIT
                 sureRoadHeights[self.roadNetwork.newNode(ivec2(x, z))] = y
 
         self.editor.flushBuffer()
@@ -391,7 +398,10 @@ class Core():
                 if lastY is None:
                     break
                 area = Rect(node.val, (UNIT, UNIT))
-                y = round(self.getHeightMap("mean", area))
+                if is_underground:
+                    y = y_height
+                else:
+                    y = round(self.getHeightMap("mean", area))
                 delta = y - lastY
                 if abs(delta) > 1:
                     delta = delta // abs(delta)
@@ -410,24 +420,29 @@ class Core():
             if node in sureRoadHeights:
                 y = sureRoadHeights[node]
             else:
-                y = round(self.getHeightMap("mean", area))
+                if is_underground:
+                    y = y_height
+                else:
+                    y = round(self.getHeightMap("mean", area))
 
             sureRoadHeights[node] = y
-            pos = addY(node.val+globalOffset, y)
+            pos = addY(node.val + globalOffset, y)
 
             clearBox = area.toBox(y, 3)
             for x, y, z in clearBox.inner:
                 block = self.worldSlice.getBlock((x, y, z))
                 if block.id != "minecraft:air":
                     begin, last = clearBox.begin + \
-                        addY(globalOffset, 0), clearBox.last + \
-                        addY(globalOffset, 0)
+                                  addY(globalOffset, 0), clearBox.last + \
+                                  addY(globalOffset, 0)
                     self.editor.runCommand(
-                        f"fill {begin.x} {begin.y} {begin.z} {last.x} {last.y} {last.z} minecraft:air", syncWithBuffer=True)
+                        f"fill {begin.x} {begin.y} {begin.z} {last.x} {last.y} {last.z} minecraft:air",
+                        syncWithBuffer=True)
                     break
 
             self.editor.runCommand(
-                f"fill {pos.x} {pos.y-1} {pos.z} {pos.x+1} {pos.y-1} {pos.z+1} {config.roadMaterial}", syncWithBuffer=True)
+                f"fill {pos.x} {pos.y - 1} {pos.z} {pos.x + 1} {pos.y - 1} {pos.z + 1} {config.roadMaterial}",
+                syncWithBuffer=True)
 
         self.editor.flushBuffer()
 
@@ -439,24 +454,24 @@ class Core():
         def placeLight1(point: ivec3):
             x, y, z = point
             self.editor.runCommand(
-                f"setblock {x} {y-1} {z} minecraft:cobblestone", syncWithBuffer=True)
+                f"setblock {x} {y - 1} {z} minecraft:cobblestone", syncWithBuffer=True)
             self.editor.runCommand(
                 f"setblock {x} {y} {z} minecraft:oak_fence", syncWithBuffer=True)
             self.editor.runCommand(
-                f"setblock {x} {y+1} {z} minecraft:lantern", syncWithBuffer=True)
+                f"setblock {x} {y + 1} {z} minecraft:lantern", syncWithBuffer=True)
 
         def placeLight2(point: ivec3):
             x, y, z = point
             self.editor.runCommand(
-                f"setblock {x} {y-1} {z} minecraft:cobblestone", syncWithBuffer=True)
+                f"setblock {x} {y - 1} {z} minecraft:cobblestone", syncWithBuffer=True)
             self.editor.runCommand(
                 f"setblock {x} {y} {z} minecraft:cobblestone_wall", syncWithBuffer=True)
             self.editor.runCommand(
-                f"setblock {x} {y+1} {z} minecraft:torch", syncWithBuffer=True)
+                f"setblock {x} {y + 1} {z} minecraft:torch", syncWithBuffer=True)
 
         lightPositions = poissonDiskSample(
             bound=localBound,
-            limit=len(roadNodes)//3,
+            limit=len(roadNodes) // 3,
             r=10,
             k=50,
             sampleFunc=sampleRoadNode,
@@ -466,18 +481,21 @@ class Core():
         for pos in lightPositions:
             node = self.roadNetwork.newNode(pos)
             if node not in sureRoadHeights:
-                y = round(self.getHeightMap("mean", Rect(pos, (UNIT, UNIT))))
+                if is_underground:
+                    y = y_height
+                else:
+                    y = round(self.getHeightMap("mean", Rect(pos, (UNIT, UNIT))))
             else:
                 y = sureRoadHeights[node]
             neighbors = list(neighbors2D(pos, localBound, stride=UNIT))
             shuffle(neighbors)
             for neighbor in neighbors:
                 x, z = neighbor
-                if self.blueprint[x//UNIT, z//UNIT] == 0:
+                if self.blueprint[x // UNIT, z // UNIT] == 0:
 
-                    if x-pos.x < 0:
+                    if x - pos.x < 0:
                         x = pos.x - 1
-                    if z-pos.y < 0:
+                    if z - pos.y < 0:
                         z = pos.y - 1
 
                     choice([placeLight1, placeLight2])(

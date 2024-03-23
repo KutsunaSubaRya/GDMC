@@ -1,27 +1,28 @@
 from gdpc import Editor
 from gdpc import WorldSlice
 from gdpc.vector_tools import Rect
-import time
-
-lobby_x = 50
-lobby_y = 0
-lobby_z = 50
-lobby_width_1 = 120
-lobby_width_2 = 120
-lobby_height = 12
-build_area_start_x = lobby_x - 3
-build_area_start_y = lobby_y + 2
-build_area_start_z = lobby_z - 3
-build_area_end_x = lobby_x + lobby_width_1 + 3
-build_area_end_y = lobby_y + lobby_height * 2 + 1
-build_area_end_z = lobby_z + lobby_width_2 + 3
+from src.config.config import config
+# import time
+#
+lobby_x = config.lobby_x
+lobby_y = config.lobby_y
+lobby_z = config.lobby_z
+lobby_width_1 = config.lobby_width_1
+lobby_width_2 = config.lobby_width_2
+lobby_height = config.lobby_height
+build_area_start_x = config.build_area_start_x
+build_area_start_y = config.build_area_start_y
+build_area_start_z = config.build_area_start_z
+build_area_end_x = config.build_area_end_x
+build_area_end_y = config.build_area_end_y
+build_area_end_z = config.build_area_end_z
 
 
 def wall_generate(editor: Editor, x_corner, y_height, z_corner, width_1, width_2, height):
     cube_generate(editor, x_corner, y_height, z_corner, width_1, width_2, height)
     cube_generate(editor, x_corner + 1, y_height + 1, z_corner + 1, width_1 - 2, width_2 - 2, height - 1)
     no_border_cube_generate(editor, x_corner, y_height + height, z_corner, width_1, width_2, height, "air")
-    surface_generate(editor, x_corner + 2, y_height + 1, z_corner + 2, width_1 - 4, width_2 - 4, height)
+    surface_generate(editor, x_corner + 2, y_height + 1, z_corner + 2, width_1 - 4, width_2 - 4)
     for i in range(0, width_1 + 1):
         if i % 2 == 0:
             editor.runCommand(f"setblock {x_corner + i} {y_height + height} {z_corner} stone_bricks")
@@ -50,9 +51,9 @@ def no_border_cube_generate(editor: Editor, x_corner, y_height, z_corner, width_
         editor.flushBuffer()
 
 
-def surface_generate(editor: Editor, x_corner, y_height, z_corner, width_1, width_2, height):
+def surface_generate(editor: Editor, x_corner, y_height, z_corner, width_1, width_2, material="grass_block"):
     editor.runCommand(
-        f"fill {x_corner} {y_height} {z_corner} {x_corner + width_1} {y_height} {z_corner + width_2} grass_block")
+        f"fill {x_corner} {y_height} {z_corner} {x_corner + width_1} {y_height} {z_corner + width_2} {material}")
     editor.flushBuffer()
 
 
@@ -61,26 +62,24 @@ def lobby_generate(editor: Editor, x_corner, y_height, z_corner, width_1, width_
     wall_generate(editor, lobby_x, lobby_y, lobby_z, lobby_width_1, lobby_width_2, lobby_height)
 
 
-def get_height(worldSlice: WorldSlice, x, z):
-    """
-    Get the height of the worldSlice at the given x and z coordinates.
-    """
+def get_block_height_and_info(worldSlice: WorldSlice, x, z):
     buildArea = editor.getBuildArea()
     print("Loading world slice...")
     worldSlice = editor.loadWorldSlice(buildArea.toRect(), cache=True)
     print("World slice loaded")
 
     area = Rect(size=worldSlice.rect.size)
-    shape = area.size.to_tuple()
     heightMaps = worldSlice.heightmaps["MOTION_BLOCKING_NO_LEAVES"]
-    for x, z in area.inner:
-        y = heightMaps[x, z]
-        print(f"({x}, {y}, {z})")
-    return heightMaps
+    globalBound = buildArea.toRect()
+    globalOffset = globalBound.offset
 
+    height = heightMaps[x - globalOffset.x, z - globalOffset.y]
+    print("height", height)
+
+    block = worldSlice.getBlock((x - globalOffset.x, height - 1, z - globalOffset.y))
+    print("block", block)
 
 if __name__ == "__main__":
     editor = Editor()
-    # height1 = get_height(editor.worldSlice, -87, 102)
-    # print(height1)
-    lobby_generate(editor, lobby_x, lobby_y, lobby_z, lobby_width_1, lobby_width_2, lobby_height)
+    get_block_height_and_info(editor.worldSlice, 5918, 5880)
+    # lobby_generate(editor, lobby_x, lobby_y, lobby_z, lobby_width_1, lobby_width_2, lobby_height)

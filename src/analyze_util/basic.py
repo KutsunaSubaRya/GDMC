@@ -88,9 +88,6 @@ def isDesert(core: Core, area: Rect) -> float:
 def isVillage(core: Core, area: Rect) -> bool:
     """Check if the area is in the village"""
     begin, end = area.begin, area.end
-    print(np.sum(core.resourcesMap.artificial[begin.x:end.x, begin.y:end.y]) > 0)
-    import time
-    time.sleep(10)
     return np.sum(core.resourcesMap.artificial[begin.x:end.x, begin.y:end.y]) > 0
 
 
