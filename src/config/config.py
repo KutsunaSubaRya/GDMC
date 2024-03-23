@@ -138,6 +138,23 @@ class Config:
     """The material of the road"""
 
     # ================ main ================
+
     gameRound: int = 150
+
+    # ============ underground ============
+
+    offset = 5800
+    lobby_x = 50 + offset
+    lobby_y = 0
+    lobby_z = 50 + offset
+    lobby_width_1 = 120
+    lobby_width_2 = 120
+    lobby_height = 12
+    build_area_start_x = lobby_x + 2
+    build_area_start_y = lobby_y + 2
+    build_area_start_z = lobby_z + 2
+    build_area_end_x = lobby_x + lobby_width_1 - 2
+    build_area_end_y = lobby_y + lobby_height * 2
+    build_area_end_z = lobby_z + lobby_width_2 - 2
 
 config = Config.load()
