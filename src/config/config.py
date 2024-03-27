@@ -110,12 +110,12 @@ class Config:
 
     desertnessThreshold: float = 0.4
 
-    forestThreshold: float = 4/(16*16)
+    forestThreshold: float = 4 / (16 * 16)
     """"4 leaves per chunk"""
 
     forestQueryMargin: int = 16
 
-    rockThreshold: float = 0.1/(16*16)
+    rockThreshold: float = 0.1 / (16 * 16)
     """"0.1 rock per chunk"""
 
     rockQueryMargin: int = 16
@@ -143,10 +143,12 @@ class Config:
 
     # ============ underground ============
 
-    offset = 5800
-    lobby_x = 50 + offset
+    offset = 0
+    local_lobby_offset_x = 50
+    local_lobby_offset_z = 50
+    lobby_x = local_lobby_offset_x + offset
     lobby_y = 0
-    lobby_z = 50 + offset
+    lobby_z = local_lobby_offset_z + offset
     lobby_width_1 = 120
     lobby_width_2 = 120
     lobby_height = 12
@@ -156,5 +158,6 @@ class Config:
     build_area_end_x = lobby_x + lobby_width_1 - 2
     build_area_end_y = lobby_y + lobby_height * 2
     build_area_end_z = lobby_z + lobby_width_2 - 2
+
 
 config = Config.load()

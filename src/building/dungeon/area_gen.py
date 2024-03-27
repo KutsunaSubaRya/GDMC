@@ -2,11 +2,14 @@ from gdpc import Editor
 from gdpc import WorldSlice
 from gdpc.vector_tools import Rect
 from src.config.config import config
+
 # import time
 #
 lobby_x = config.lobby_x
 lobby_y = config.lobby_y
 lobby_z = config.lobby_z
+local_lobby_offset_x = config.local_lobby_offset_x
+local_lobby_offset_z = config.local_lobby_offset_z
 lobby_width_1 = config.lobby_width_1
 lobby_width_2 = config.lobby_width_2
 lobby_height = config.lobby_height
@@ -40,6 +43,19 @@ def cube_generate(editor: Editor, x_corner, y_height, z_corner, width_1, width_2
     for i in range(1, height - 1):
         editor.runCommand(
             f"fill {x_corner + 1} {y_height + i} {z_corner + 1} {x_corner + width_1 - 1} {y_height + i + 1} {z_corner + width_2 - 1} air")
+        editor.flushBuffer()
+
+
+def cube_generate_from_middle(editor: Editor, x_corner, y_height, z_corner, width_1, width_2, height, size: int = 7):
+    sz = size//2
+
+    for i in range(0, height):
+        editor.runCommand(
+            f"fill {x_corner - sz} {y_height + i} {z_corner - sz} {x_corner + width_1} {y_height + i + 1} {z_corner + width_2} stone_bricks")
+        editor.flushBuffer()
+    for i in range(1, height - 1):
+        editor.runCommand(
+            f"fill {x_corner + 1 - sz} {y_height + i} {z_corner + 1 - sz} {x_corner + width_1 - 1} {y_height + i + 1} {z_corner + width_2 - 1} air")
         editor.flushBuffer()
 
 
@@ -78,6 +94,7 @@ def get_block_height_and_info(worldSlice: WorldSlice, x, z):
 
     block = worldSlice.getBlock((x - globalOffset.x, height - 1, z - globalOffset.y))
     print("block", block)
+
 
 if __name__ == "__main__":
     editor = Editor()
