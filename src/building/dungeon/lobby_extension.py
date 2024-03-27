@@ -11,15 +11,6 @@ from src.building.dungeon.area_gen import cube_generate_from_middle
 import matplotlib.patches as mpatch
 import numpy as np
 
-lobby_x = config.lobby_x
-lobby_y = config.lobby_y
-lobby_z = config.lobby_z
-local_lobby_offset_x = config.local_lobby_offset_x
-local_lobby_offset_z = config.local_lobby_offset_z
-lobby_width_1 = config.lobby_width_1
-lobby_width_2 = config.lobby_width_2
-# fig, ax = plt.subplots()
-
 
 class Graph:
     mst_result = []
@@ -126,9 +117,9 @@ def lobby_extension(editor: Editor, original_area: Box):
     end_x, end_y, end_z = original_area.end
     offset_x, offset_z = local_lobby_dynamic_offset(original_area)
 
-    bound = Rect(ivec2(0, 0), ivec2(end_x, end_z))
+    bound = Rect(ivec2(0, 0), ivec2(end_x-start_x, end_z-start_z))
     samples = poissonDiskSample(bound, 1000, 22)
-    display_plt(samples, end_x, end_z, offset_x, offset_z)
+    display_plt(samples, end_x-start_x, end_z-start_z, offset_x, offset_z)
     # sideNode list
     north_samples = []
     south_samples = []
@@ -258,8 +249,11 @@ def lobby_extension(editor: Editor, original_area: Box):
 def roadConnection(editor: Editor, original_area, samples: list[sideNode], mst_samples: list[list[int]]):
     globalBound = original_area.toRect()
     globalOffset = globalBound.offset
+    print("=======================================================")
+    print("globalOffset: ", globalOffset)
+    print("=======================================================")
     UNIT = config.unit
-    fig, ax = plt.subplots()
+    # fig, ax = plt.subplots()
     # ====== Add road to Minecraft ======
 
     # Fix the road height
@@ -276,10 +270,10 @@ def roadConnection(editor: Editor, original_area, samples: list[sideNode], mst_s
     for i in range(len(mst_samples)):
         node_idx_from = samples[mst_samples[i][0]]
         node_idx_to = samples[mst_samples[i][1]]
-        pos_from_x = node_idx_from.pos[0] + globalOffset.x
-        pos_from_z = node_idx_from.pos[1] + globalOffset.y
-        pos_to_x = node_idx_to.pos[0] + globalOffset.x
-        pos_to_z = node_idx_to.pos[1] + globalOffset.y
+        pos_from_x = node_idx_from.pos[0]
+        pos_from_z = node_idx_from.pos[1]
+        pos_to_x = node_idx_to.pos[0]
+        pos_to_z = node_idx_to.pos[1]
         # print("From: ", pos_from_x, pos_from_z)
         # print("To: ", pos_to_x, pos_to_z)
 
@@ -308,21 +302,21 @@ def roadConnection(editor: Editor, original_area, samples: list[sideNode], mst_s
                     z += 1
                     roadNodes.add(roadNetwork.newNode(ivec2(idx_x, z)))
                     print("add point", ivec2(idx_x, z))
-                    p = mpatch.Rectangle(ivec2(idx_x, z) + globalOffset, UNIT, UNIT, fill=True, color="red")
-                    ax.add_artist(p)
+                    # p = mpatch.Rectangle(ivec2(idx_x, z) + globalOffset, UNIT, UNIT, fill=True, color="red")
+                    # ax.add_artist(p)
                 elif z + 1 > pos_to_z and idx_x + 1 < pos_to_x:
                     idx_x += 1
                     roadNodes.add(roadNetwork.newNode(ivec2(idx_x, z)))
                     print("add point", ivec2(idx_x, z))
-                    p = mpatch.Rectangle(ivec2(idx_x, z) + globalOffset, UNIT, UNIT, fill=True, color="red")
-                    ax.add_artist(p)
+                    # p = mpatch.Rectangle(ivec2(idx_x, z) + globalOffset, UNIT, UNIT, fill=True, color="red")
+                    # ax.add_artist(p)
                 else:
                     idx_x += 1
                     z += 1
                     roadNodes.add(roadNetwork.newNode(ivec2(idx_x, z)))
                     print("add point", ivec2(idx_x, z))
-                    p = mpatch.Rectangle(ivec2(idx_x, z) + globalOffset, UNIT, UNIT, fill=True, color="red")
-                    ax.add_artist(p)
+                    # p = mpatch.Rectangle(ivec2(idx_x, z) + globalOffset, UNIT, UNIT, fill=True, color="red")
+                    # ax.add_artist(p)
         # right bottom to left top
         else:
             if (pos_from_x < pos_to_x) and (pos_from_z > pos_to_z):
@@ -344,22 +338,26 @@ def roadConnection(editor: Editor, original_area, samples: list[sideNode], mst_s
                     idx_x -= 1
                     roadNodes.add(roadNetwork.newNode(ivec2(idx_x, z)))
                     print("add point", ivec2(idx_x, z))
-                    p = mpatch.Rectangle(ivec2(idx_x, z) + globalOffset, UNIT, UNIT, fill=True, color="red")
-                    ax.add_artist(p)
+                    # p = mpatch.Rectangle(ivec2(idx_x, z) + globalOffset, UNIT, UNIT, fill=True, color="red")
+                    # ax.add_artist(p)
                 elif z + 1 < pos_to_z and idx_x - 1 < pos_to_x:
                     z += 1
                     roadNodes.add(roadNetwork.newNode(ivec2(idx_x, z)))
                     print("add point", ivec2(idx_x, z))
-                    p = mpatch.Rectangle(ivec2(idx_x, z) + globalOffset, UNIT, UNIT, fill=True, color="red")
-                    ax.add_artist(p)
+                    # p = mpatch.Rectangle(ivec2(idx_x, z) + globalOffset, UNIT, UNIT, fill=True, color="red")
+                    # ax.add_artist(p)
                 else:
                     idx_x -= 1
                     z += 1
                     roadNodes.add(roadNetwork.newNode(ivec2(idx_x, z)))
                     print("add point", ivec2(idx_x, z))
-                    p = mpatch.Rectangle(ivec2(idx_x, z) + globalOffset, UNIT, UNIT, fill=True, color="red")
-                    ax.add_artist(p)
+                    # p = mpatch.Rectangle(ivec2(idx_x, z) + globalOffset, UNIT, UNIT, fill=True, color="red")
+                    # ax.add_artist(p)
 
+    # ax.set_xlim(original_area.begin.x, original_area.end.x)
+    # ax.set_ylim(original_area.begin.z, original_area.end.z)
+    # ax.set_aspect("equal")
+    # plt.show()
     for node in roadNodes:
         area = Rect(node.val, (UNIT, UNIT))
 
@@ -384,5 +382,5 @@ def roadConnection(editor: Editor, original_area, samples: list[sideNode], mst_s
     editor.flushBuffer()
 
     for sample in samples:
-        cube_generate_from_middle(editor, sample.pos[0], 0, sample.pos[1], 7, 7, 7)
+        cube_generate_from_middle(editor, sample.pos[0] + globalOffset.x, 0, sample.pos[1] + globalOffset.y, 7, 7, 7)
     editor.flushBuffer()

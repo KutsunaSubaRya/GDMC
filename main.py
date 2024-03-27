@@ -53,6 +53,7 @@ from gdpc.vector_tools import ivec3, Box
 from gdpc import Editor
 from time import sleep
 from src.building.dungeon.area_gen import lobby_generate, surface_generate
+from src.building.dungeon.utils import local_lobby_dynamic_offset
 
 AREA_JSON_PATH = Path("area.json")
 
@@ -68,91 +69,105 @@ if __name__ == '__main__':
     print("Initing core...")
     core = Core()
     print("Done initing core")
+    print("save original building area...")
+    original_area = core.editor.getBuildArea()
+    print("Done save original building area")
 
-    levelManager = LevelManager()
-    agentPool = AgentPool(core, NUM_BASIC_AGENTS, NUM_SPECIAL_AGENTS)
-    RoadAgent(core)
+    # FIXME: lobby_x, lobby_z needs to be changed dynamically
 
-    for agent in agentPool.agents:
-        print(agent)
+    # levelManager = LevelManager()
+    # agentPool = AgentPool(core, NUM_BASIC_AGENTS, NUM_SPECIAL_AGENTS)
+    # RoadAgent(core)
+    #
+    # for agent in agentPool.agents:
+    #     print(agent)
+    #
+    # # iterate rounds for surface
+    # for i in range(ROUND):
+    #     numbersOfBuildings = [
+    #         core.numberOfBuildings(level) for level in (1, 2, 3)
+    #     ]
+    #     limitsOfBuildings = [
+    #         core.getBuildingLimit(level) for level in (1, 2, 3)
+    #     ]
+    #
+    #     print(f"Round: {i}")
+    #     print(f"Level: {core.level}")
+    #     print(f"Buildings: {numbersOfBuildings}")
+    #     print(f"Max Buildings:  {limitsOfBuildings}")
+    #     print(f"Resources: {core.resources}")
+    #
+    #     core.updateResource()
+    #
+    #     unlockedAgents = getUnlockAgents(core.level, "surface")
+    #     print("Unlocked agents: ", unlockedAgents)
+    #
+    #     for unlockedAgent in unlockedAgents:
+    #         agentPool.unlockSpecial(unlockedAgent)
+    #
+    #     print("Start running agents")
+    #
+    #     restingAgents = 0
+    #
+    #     agents = list(agentPool.agents)
+    #     for agent in sample(agents, len(agents)):
+    #         # run agent
+    #         success = agent.run()
+    #
+    #         if not success:
+    #             # gather resource if the agent cannot do their job
+    #             restingAgents += 1
+    #             agent.rest()
+    #
+    #     core.increaseGrass()
+    #
+    #     print(f"Resting agents: {restingAgents}")
+    #
+    #     if levelManager.canLevelUp(core.level, core.resources,
+    #                                core.numberOfBuildings()):
+    #         core.levelUp()
+    #
+    #     # clamp resource to limit
+    #     core.conformToResourceLimit()
+    #
+    #     print("Round Done")
+    #     print("=====")
+    #
+    #     # Time limiter
+    #     if time() - startTime > 465:
+    #         print("Round had run over 7min 30sec. Force enter minecraft building phase.")
+    #         break
+    #
+    # print("Start building in minecraft")
+    #
+    # core.startBuildingInMinecraft()
+    #
+    # print("Done building in minecraft")
+    #
 
-    # iterate rounds for surface
-    for i in range(ROUND):
-        numbersOfBuildings = [
-            core.numberOfBuildings(level) for level in (1, 2, 3)
-        ]
-        limitsOfBuildings = [
-            core.getBuildingLimit(level) for level in (1, 2, 3)
-        ]
 
-        print(f"Round: {i}")
-        print(f"Level: {core.level}")
-        print(f"Buildings: {numbersOfBuildings}")
-        print(f"Max Buildings:  {limitsOfBuildings}")
-        print(f"Resources: {core.resources}")
 
-        core.updateResource()
-
-        unlockedAgents = getUnlockAgents(core.level, "surface")
-        print("Unlocked agents: ", unlockedAgents)
-
-        for unlockedAgent in unlockedAgents:
-            agentPool.unlockSpecial(unlockedAgent)
-
-        print("Start running agents")
-
-        restingAgents = 0
-
-        agents = list(agentPool.agents)
-        for agent in sample(agents, len(agents)):
-            # run agent
-            success = agent.run()
-
-            if not success:
-                # gather resource if the agent cannot do their job
-                restingAgents += 1
-                agent.rest()
-
-        core.increaseGrass()
-
-        print(f"Resting agents: {restingAgents}")
-
-        if levelManager.canLevelUp(core.level, core.resources,
-                                   core.numberOfBuildings()):
-            core.levelUp()
-
-        # clamp resource to limit
-        core.conformToResourceLimit()
-
-        print("Round Done")
-        print("=====")
-
-        # Time limiter
-        if time() - startTime > 465:
-            print("Round had run over 7min 30sec. Force enter minecraft building phase.")
-            break
-
-    print("Start building in minecraft")
-
-    core.startBuildingInMinecraft()
-
-    print("Done building in minecraft")
+    from src.building.dungeon.lobby_extension import lobby_extension, roadConnection
+    lobby_extension(core.editor, original_area)
 
     # iterate rounds for underground
     # FIXME: hardcode here
-    lobby_x = config.lobby_x
+    editor = Editor()
+    globalBound = editor.getBuildArea().toRect()
+    globalOffset = globalBound.offset
+    lobby_offset_x, lobby_offset_z = local_lobby_dynamic_offset(original_area)
+    lobby_x = lobby_offset_x + globalOffset.x
     lobby_y = config.lobby_y
-    lobby_z = config.lobby_z
+    lobby_z = lobby_offset_z + globalOffset.y
     lobby_width_1 = config.lobby_width_1
     lobby_width_2 = config.lobby_width_2
     lobby_height = config.lobby_height
-    build_area_start_x = config.build_area_start_x
-    build_area_start_y = config.build_area_start_y
-    build_area_start_z = config.build_area_start_z
-    build_area_end_x = config.build_area_end_x
-    build_area_end_y = config.build_area_end_y
-    build_area_end_z = config.build_area_end_z
-    editor = Editor()
+    build_area_start_x = lobby_x + 2
+    build_area_start_y = lobby_y + 2
+    build_area_start_z = lobby_z + 2
+    build_area_end_x = lobby_x + lobby_width_1 - 2
+    build_area_end_y = lobby_y + lobby_height * 2
+    build_area_end_z = lobby_z + lobby_width_2 - 2
     surface_generate(editor, lobby_x + 2, 200, lobby_z + 2, lobby_width_1 - 4, lobby_width_2 - 4)
     # setbuildarea
     editor.runCommand(

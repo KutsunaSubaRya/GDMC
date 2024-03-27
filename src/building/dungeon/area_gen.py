@@ -5,20 +5,20 @@ from src.config.config import config
 
 # import time
 #
-lobby_x = config.lobby_x
-lobby_y = config.lobby_y
-lobby_z = config.lobby_z
-local_lobby_offset_x = config.local_lobby_offset_x
-local_lobby_offset_z = config.local_lobby_offset_z
-lobby_width_1 = config.lobby_width_1
-lobby_width_2 = config.lobby_width_2
-lobby_height = config.lobby_height
-build_area_start_x = config.build_area_start_x
-build_area_start_y = config.build_area_start_y
-build_area_start_z = config.build_area_start_z
-build_area_end_x = config.build_area_end_x
-build_area_end_y = config.build_area_end_y
-build_area_end_z = config.build_area_end_z
+# lobby_x = config.lobby_x
+# lobby_y = config.lobby_y
+# lobby_z = config.lobby_z
+# local_lobby_offset_x = config.local_lobby_offset_x
+# local_lobby_offset_z = config.local_lobby_offset_z
+# lobby_width_1 = config.lobby_width_1
+# lobby_width_2 = config.lobby_width_2
+# lobby_height = config.lobby_height
+# build_area_start_x = config.build_area_start_x
+# build_area_start_y = config.build_area_start_y
+# build_area_start_z = config.build_area_start_z
+# build_area_end_x = config.build_area_end_x
+# build_area_end_y = config.build_area_end_y
+# build_area_end_z = config.build_area_end_z
 
 
 def wall_generate(editor: Editor, x_corner, y_height, z_corner, width_1, width_2, height):
@@ -75,7 +75,7 @@ def surface_generate(editor: Editor, x_corner, y_height, z_corner, width_1, widt
 
 def lobby_generate(editor: Editor, x_corner, y_height, z_corner, width_1, width_2, height):
     cube_generate(editor, x_corner - 3, y_height, z_corner - 3, width_1 + 6, width_2 + 6, height * 2 + 1)
-    wall_generate(editor, lobby_x, lobby_y, lobby_z, lobby_width_1, lobby_width_2, lobby_height)
+    wall_generate(editor, x_corner, y_height, z_corner, width_1, width_2, height)
 
 
 def get_block_height_and_info(worldSlice: WorldSlice, x, z):
