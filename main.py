@@ -52,7 +52,7 @@ from json import load
 from gdpc.vector_tools import ivec3, Box
 from gdpc import Editor
 from time import sleep
-from src.building.dungeon.area_gen import lobby_generate, surface_generate
+from src.building.dungeon.area_gen import lobby_generate, surface_generate, surface_material_scattering
 from src.building.dungeon.utils import local_lobby_dynamic_offset
 
 AREA_JSON_PATH = Path("area.json")
@@ -145,10 +145,8 @@ if __name__ == '__main__':
     # print("Done building in minecraft")
     #
 
-
-
-    from src.building.dungeon.lobby_extension import lobby_extension, roadConnection
-    lobby_extension(core.editor, original_area)
+    # from src.building.dungeon.lobby_extension import lobby_extension, roadConnection
+    # lobby_extension(core.editor, original_area)
 
     # iterate rounds for underground
     # FIXME: hardcode here
@@ -242,6 +240,18 @@ if __name__ == '__main__':
 
     # Change back surface to air
     surface_generate(editor, lobby_x + 2, 200, lobby_z + 2, lobby_width_1 - 4, lobby_width_2 - 4, "air")
+    surface_generate(editor, lobby_x - 2, build_area_end_y + 1, lobby_z - 2, lobby_width_1 + 4, lobby_width_2 + 4,
+                     "sea_lantern")
+    surface_generate(editor, lobby_x - 3, build_area_end_y + 2, lobby_z - 3, lobby_width_1 + 6, lobby_width_2 + 6,
+                     "stone_bricks")
+    surface_material_scattering(editor, lobby_x + 2, lobby_y, lobby_z + 2, lobby_width_1 - 4,
+                                lobby_width_2 - 4, "sea_lantern")
+    surface_material_scattering(editor, lobby_x + 2, lobby_y + 1, lobby_z + 2, lobby_width_1 - 4,
+                                lobby_width_2 - 4, "glass")
+    surface_generate(editor, lobby_x - 2, lobby_y, lobby_z - 2, lobby_width_1 + 4, lobby_width_2 + 4,
+                     "sea_lantern")
+    surface_generate(editor, lobby_x - 3, lobby_y - 1, lobby_z - 3, lobby_width_1 + 6, lobby_width_2 + 6,
+                     "stone_bricks")
 
     print("Start building in minecraft")
 

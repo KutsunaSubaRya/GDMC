@@ -371,10 +371,16 @@ def roadConnection(editor: Editor, original_area, samples: list[sideNode], mst_s
                           addY(globalOffset, 0), clearBox.last + \
                           addY(globalOffset, 0)
             editor.runCommand(
+                f"fill {begin.x} {last.y + 2} {begin.z} {last.x} {last.y + 2} {last.z} minecraft:stone_bricks",
+                syncWithBuffer=True)
+            editor.runCommand(
+                f"fill {begin.x} {last.y + 1} {begin.z} {last.x} {last.y + 1} {last.z} minecraft:lantern",
+                syncWithBuffer=True)
+            editor.runCommand(
                 f"fill {begin.x} {begin.y} {begin.z} {last.x} {last.y} {last.z} minecraft:air",
                 syncWithBuffer=True)
             break
-        a = "minecraft:gold_block"
+        a = "minecraft:sea_lantern"
         editor.runCommand(
             f"fill {pos.x} {pos.y - 1} {pos.z} {pos.x + 1} {pos.y - 1} {pos.z + 1} {a}",
             syncWithBuffer=True)
@@ -382,5 +388,5 @@ def roadConnection(editor: Editor, original_area, samples: list[sideNode], mst_s
     editor.flushBuffer()
 
     for sample in samples:
-        cube_generate_from_middle(editor, sample.pos[0] + globalOffset.x, 0, sample.pos[1] + globalOffset.y, 7, 7, 7)
+        cube_generate_from_middle(editor, sample.pos[0] + globalOffset.x, 0, sample.pos[1] + globalOffset.y, 7, 7, 7, border_material="air", inner_material="air")
     editor.flushBuffer()

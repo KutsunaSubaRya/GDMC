@@ -33,6 +33,11 @@ def wall_generate(editor: Editor, x_corner, y_height, z_corner, width_1, width_2
             editor.runCommand(f"setblock {x_corner + width_1} {y_height + height} {z_corner + i} stone_bricks")
             editor.runCommand(f"setblock {x_corner + i} {y_height + height} {z_corner + width_1} stone_bricks")
             print(f"setblock {x_corner + i} {y_height + height} {z_corner} stone_bricks")
+            editor.runCommand(f"setblock {x_corner + i} {y_height + height + 1} {z_corner} lantern")
+            editor.runCommand(f"setblock {x_corner} {y_height + height + 1} {z_corner + i} lantern")
+            editor.runCommand(f"setblock {x_corner + width_1} {y_height + height + 1} {z_corner + i} lantern")
+            editor.runCommand(f"setblock {x_corner + i} {y_height + height + 1} {z_corner + width_1} lantern")
+            print(f"setblock {x_corner + i} {y_height + height + 1} {z_corner} lantern")
 
 
 def cube_generate(editor: Editor, x_corner, y_height, z_corner, width_1, width_2, height):
@@ -46,16 +51,16 @@ def cube_generate(editor: Editor, x_corner, y_height, z_corner, width_1, width_2
         editor.flushBuffer()
 
 
-def cube_generate_from_middle(editor: Editor, x_corner, y_height, z_corner, width_1, width_2, height, size: int = 7):
+def cube_generate_from_middle(editor: Editor, x_corner, y_height, z_corner, width_1, width_2, height, size: int = 7, border_material="stone_bricks", inner_material="air"):
     sz = size//2
 
     for i in range(0, height):
         editor.runCommand(
-            f"fill {x_corner - sz} {y_height + i} {z_corner - sz} {x_corner + width_1} {y_height + i + 1} {z_corner + width_2} stone_bricks")
+            f"fill {x_corner - sz} {y_height + i} {z_corner - sz} {x_corner + width_1} {y_height + i + 1} {z_corner + width_2} {border_material}")
         editor.flushBuffer()
     for i in range(1, height - 1):
         editor.runCommand(
-            f"fill {x_corner + 1 - sz} {y_height + i} {z_corner + 1 - sz} {x_corner + width_1 - 1} {y_height + i + 1} {z_corner + width_2 - 1} air")
+            f"fill {x_corner + 1 - sz} {y_height + i} {z_corner + 1 - sz} {x_corner + width_1 - 1} {y_height + i + 1} {z_corner + width_2 - 1} {inner_material}")
         editor.flushBuffer()
 
 
@@ -77,7 +82,6 @@ def lobby_generate(editor: Editor, x_corner, y_height, z_corner, width_1, width_
     cube_generate(editor, x_corner - 3, y_height, z_corner - 3, width_1 + 6, width_2 + 6, height * 2 + 1)
     wall_generate(editor, x_corner, y_height, z_corner, width_1, width_2, height)
 
-
 def get_block_height_and_info(worldSlice: WorldSlice, x, z):
     buildArea = editor.getBuildArea()
     print("Loading world slice...")
@@ -95,6 +99,13 @@ def get_block_height_and_info(worldSlice: WorldSlice, x, z):
     block = worldSlice.getBlock((x - globalOffset.x, height - 1, z - globalOffset.y))
     print("block", block)
 
+
+def surface_material_scattering(editor: Editor, x_corner, y_height, z_corner, width_1, width_2, material="sea_lantern"):
+    # mod 4 to make sure the material is not too dense
+    for i in range(0, width_1, 4):
+        for j in range(0, width_2, 4):
+            editor.runCommand(f"setblock {x_corner + i} {y_height} {z_corner + j} {material}")
+        editor.flushBuffer()
 
 if __name__ == "__main__":
     editor = Editor()
