@@ -143,10 +143,10 @@ if __name__ == '__main__':
     # core.startBuildingInMinecraft()
     #
     # print("Done building in minecraft")
-    #
 
-    # from src.building.dungeon.lobby_extension import lobby_extension, roadConnection
-    # lobby_extension(core.editor, original_area)
+
+    from src.building.dungeon.lobby_extension import lobby_extension, roadConnection
+    ne, se, ee, we = lobby_extension(core.editor, original_area)
 
     # iterate rounds for underground
     # FIXME: hardcode here
@@ -253,6 +253,21 @@ if __name__ == '__main__':
     surface_generate(editor, lobby_x - 3, lobby_y - 1, lobby_z - 3, lobby_width_1 + 6, lobby_width_2 + 6,
                      "stone_bricks")
 
+    # build lobby entry
+    end_x, end_y, end_z = original_area.end
+    offset_x, offset_z = local_lobby_dynamic_offset(original_area)
+    for i in range(1, 3):
+        editor.runCommand(f"setblock {(offset_x + 60) + globalOffset.x} {i} {120 + offset_z + 3 + globalOffset.y} air")
+        editor.runCommand(f"setblock {(offset_x + 60) + globalOffset.x} {i} {0 + offset_z - 3 + globalOffset.y} air")
+        editor.runCommand(f"setblock {0 + offset_x - 3 + globalOffset.x} {i} {(offset_z + 60) + globalOffset.y} air")
+        editor.runCommand(f"setblock {120 + offset_x + 3 + globalOffset.x} {i} {(offset_z + 60) + globalOffset.y} air")
+
+    print("globalOffset", globalOffset)
+    print("original_area", original_area)
+    print("end_x", end_x)
+    print("end_z", end_z)
+    print("offset_x", offset_x)
+    print("offset_z", offset_z)
     print("Start building in minecraft")
 
     core.startBuildingInMinecraft(is_underground=True, y_height=lobby_y + 2)

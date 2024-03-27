@@ -117,9 +117,9 @@ def lobby_extension(editor: Editor, original_area: Box):
     end_x, end_y, end_z = original_area.end
     offset_x, offset_z = local_lobby_dynamic_offset(original_area)
 
-    bound = Rect(ivec2(0, 0), ivec2(end_x-start_x, end_z-start_z))
+    bound = Rect(ivec2(0, 0), ivec2(end_x - start_x, end_z - start_z))
     samples = poissonDiskSample(bound, 1000, 22)
-    display_plt(samples, end_x-start_x, end_z-start_z, offset_x, offset_z)
+    display_plt(samples, end_x - start_x, end_z - start_z, offset_x, offset_z)
     # sideNode list
     north_samples = []
     south_samples = []
@@ -177,6 +177,17 @@ def lobby_extension(editor: Editor, original_area: Box):
     # print("Size of east_samples: ", len(east_samples))
     # print("Size of west_samples: ", len(west_samples))
 
+    # print("=======================================================")
+
+    lobby_north_entry = ivec2((offset_x + 60), 120 + offset_z + 3)
+    lobby_south_entry = ivec2((offset_x + 60), 0 + offset_z - 3)
+    lobby_east_entry = ivec2(0 + offset_x - 3, (offset_z + 60))
+    lobby_west_entry = ivec2(120 + offset_x + 3, (offset_z + 60))
+    north_samples.append(sideNode(north_idx, ivec2((offset_x + 60), 120 + offset_z + 3)))
+    south_samples.append(sideNode(south_idx, ivec2((offset_x + 60), 0 + offset_z - 3)))
+    east_samples.append(sideNode(east_idx, ivec2(0 + offset_x - 3, (offset_z + 60))))
+    west_samples.append(sideNode(west_idx, ivec2(120 + offset_x + 3, (offset_z + 60))))
+
     # generate road network for north samples
     north_g = Graph(len(north_samples))
     for i in range(len(north_samples)):
@@ -231,22 +242,24 @@ def lobby_extension(editor: Editor, original_area: Box):
     west_g.KruskalMST()
     print("west MST pair", west_g.mst_result)
 
-    roadConnection(editor, original_area, north_samples, north_g.mst_result)
+    roadConnection(editor, original_area, north_samples, north_g.mst_result, lobby_north_entry)
     print("Road connection for north samples done")
-    roadConnection(editor, original_area, south_samples, south_g.mst_result)
+    roadConnection(editor, original_area, south_samples, south_g.mst_result, lobby_south_entry)
     print("Road connection for south samples done")
-    roadConnection(editor, original_area, east_samples, east_g.mst_result)
+    roadConnection(editor, original_area, east_samples, east_g.mst_result, lobby_east_entry)
     print("Road connection for east samples done")
-    roadConnection(editor, original_area, west_samples, west_g.mst_result)
+    roadConnection(editor, original_area, west_samples, west_g.mst_result, lobby_west_entry)
     print("Road connection for west samples done")
 
     # ax.set_xlim(original_area.begin.x, original_area.end.x)
     # ax.set_ylim(original_area.begin.z, original_area.end.z)
     # ax.set_aspect("equal")
     # plt.show()
+    return lobby_north_entry, lobby_south_entry, lobby_east_entry, lobby_west_entry
 
 
-def roadConnection(editor: Editor, original_area, samples: list[sideNode], mst_samples: list[list[int]]):
+def roadConnection(editor: Editor, original_area, samples: list[sideNode], mst_samples: list[list[int]],
+                   lobby_entry: ivec2):
     globalBound = original_area.toRect()
     globalOffset = globalBound.offset
     print("=======================================================")
@@ -388,5 +401,9 @@ def roadConnection(editor: Editor, original_area, samples: list[sideNode], mst_s
     editor.flushBuffer()
 
     for sample in samples:
-        cube_generate_from_middle(editor, sample.pos[0] + globalOffset.x, 0, sample.pos[1] + globalOffset.y, 7, 7, 7, border_material="air", inner_material="air")
+        # if sample is entry, pass
+        if sample.pos == lobby_entry:
+            continue
+        cube_generate_from_middle(editor, sample.pos[0] + globalOffset.x, 0, sample.pos[1] + globalOffset.y, 7, 7, 7,
+                                  border_material="air", inner_material="air")
     editor.flushBuffer()

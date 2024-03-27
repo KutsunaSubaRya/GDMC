@@ -38,6 +38,23 @@ def wall_generate(editor: Editor, x_corner, y_height, z_corner, width_1, width_2
             editor.runCommand(f"setblock {x_corner + width_1} {y_height + height + 1} {z_corner + i} lantern")
             editor.runCommand(f"setblock {x_corner + i} {y_height + height + 1} {z_corner + width_1} lantern")
             print(f"setblock {x_corner + i} {y_height + height + 1} {z_corner} lantern")
+            for j in range(0, 2):
+                editor.runCommand(f"setblock {x_corner + i} {y_height + height - 9 - j} {z_corner} air")
+                editor.runCommand(f"setblock {x_corner} {y_height + height - 9 - j} {z_corner + i} air")
+                editor.runCommand(f"setblock {x_corner + width_1} {y_height + height - 9 - j} {z_corner + i} air")
+                editor.runCommand(f"setblock {x_corner + i} {y_height + height - 9 - j} {z_corner + width_1} air")
+    for i in range(1, width_1):
+        if i % 2 == 1:
+            for j in range(0, 2):
+                print("i", i)
+                print("x_corner", x_corner)
+                print("z_corner", z_corner)
+                print("width_1", width_1)
+                print("width_2", width_2)
+                editor.runCommand(f"setblock {x_corner + i + 1} {y_height + height - 9 - j} {z_corner + 1} air")
+                editor.runCommand(f"setblock {x_corner + 1} {y_height + height - 9 - j} {z_corner + i + 1} air")
+                editor.runCommand(f"setblock {x_corner + width_1 - 1} {y_height + height - 9 - j} {z_corner + i + 1} air")
+                editor.runCommand(f"setblock {x_corner + i + 1} {y_height + height - 9 - j} {z_corner + width_1 - 1} air")
 
 
 def cube_generate(editor: Editor, x_corner, y_height, z_corner, width_1, width_2, height):
